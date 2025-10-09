@@ -32,9 +32,10 @@ using (TextReader reader = new StreamReader(padronFileStream))
             Convenio = line.Substring(16, 4).TrimEnd() == "CM" ? Convenio.Multilateral : Convenio.Local,
             FechaDesde = DateTime.ParseExact(line.Substring(20, 8).TrimEnd(), "yyyyMMdd", CultureInfo.InvariantCulture),
             FechaHasta = DateTime.ParseExact(line.Substring(30, 8).TrimEnd(), "yyyyMMdd", CultureInfo.InvariantCulture),
-            Denominacion = line.Substring(40, 150).TrimEnd(),
-            Porcentaje = TypeParser.ParsePorcentaje(line)
+            Denominacion = line.Substring(40, 150).TrimEnd()
         };
+
+        registry.ParsePorcentaje(line);
 
         padron.Add(registry);
     }
@@ -42,10 +43,7 @@ using (TextReader reader = new StreamReader(padronFileStream))
 
 foreach(var registry in padron)
 {
-    // yes, may be a static class is better this will create thousands of objects, still figuring out
-    // GC seems to be doing a good job anyway
-    var bsasStyle = new AdapterTucumanBsAs(registry);
-    Console.WriteLine(bsasStyle.GetString());
+    Console.WriteLine(registry.ToString());
 }
 
 
