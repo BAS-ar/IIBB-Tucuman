@@ -33,17 +33,17 @@ namespace BAS.Padrones.Tucuman
                 
         }
 
-        public PadronRegistry(AcreditanRegistry registry)
+        public PadronRegistry(AcreditanRegistry acreditanRegistry, CoeficientesRegistry? coeficientesRegistry)
         {
             Regimen = Regimen.Percepcion; // FIX
             FechaPublicacion = DateTime.Now; // FIX
-            FechaDesde = registry.FechaDesde;
-            FechaHasta = registry.FechaHasta;
-            Cuit = registry.Cuit;
-            Convenio = registry.Convenio;
+            FechaDesde = acreditanRegistry.FechaDesde;
+            FechaHasta = acreditanRegistry.FechaHasta;
+            Cuit = acreditanRegistry.Cuit;
+            Convenio = acreditanRegistry.Convenio;
             AltaBaja = null;
             Actualizado = false;
-            Alicuota = registry.Porcentaje;
+            Alicuota = acreditanRegistry.Porcentaje;
             Grupo = null;
         }
 

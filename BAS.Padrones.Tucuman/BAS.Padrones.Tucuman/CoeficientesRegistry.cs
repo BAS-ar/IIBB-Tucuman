@@ -42,13 +42,15 @@ namespace BAS.Padrones.Tucuman
 
         public void ParseCoeficiente(string coeficiente)
         {
-            if (coeficiente == "-.----")
+            var substring = coeficiente.Substring(16, 6);
+
+            if (substring == "-.----")
             {
                 Coeficiente = null;
             }
             else
             {
-                Coeficiente = Double.Parse(coeficiente, CultureInfo.InvariantCulture);
+                Coeficiente = Double.Parse(substring, CultureInfo.InvariantCulture);
             }
         }
     }
