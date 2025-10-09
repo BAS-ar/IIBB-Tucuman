@@ -20,12 +20,18 @@ List<AcreditanRegistry> padron = readerAcreditan.GetRegistries();
 Console.WriteLine($"Leyendo archivo coeficientes: {coeficientesFilepath}");
 List<CoeficientesRegistry> coeficientes = readerCoeficientes.GetRegistries();
 
+Console.WriteLine("Buscando coeficientes sin registros en el padrón...");
+// This uses 30% of the time
+var coeficientesSinPadron = coeficientes.Where(c => !padron.Any(p => p.Cuit == c.Cuit)).ToList();
+Console.WriteLine($"Se encontraron {coeficientesSinPadron.Count} coeficientes sin registro en el padrón");
+
 int i = 0;
 foreach (var registry in padron)
 {
     Console.SetCursorPosition(0, Console.CursorTop);
     i++;
     // Slows down a lot when looking for coeficients.
+    // could be optimized filtering registries that has no record in Acreditan
     var coeficiente = coeficientes.SingleOrDefault(c => c.Cuit == registry.Cuit);
     var bsasRegitry = new PadronRegistry(registry, coeficiente);
     outputFile.WriteLine(bsasRegitry.ToString());
