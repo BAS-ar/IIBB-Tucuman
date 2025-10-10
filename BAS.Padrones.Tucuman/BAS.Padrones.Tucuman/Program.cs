@@ -4,6 +4,7 @@
 
 using BAS.Padrones.Tucuman;
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 
 var acreditanFilepath = "C:\\Users\\admin\\Documents\\Dev\\IIBB Tucuman\\Padrón Tucuman\\ACREDITAN.txt";
 var coeficientesFilepath = "C:\\Users\\admin\\Documents\\Dev\\IIBB Tucuman\\Padrón Tucuman\\archivocoefrg116.txt";
@@ -12,9 +13,14 @@ var readerAcreditan = new TucumanAcreditanReader(acreditanFilepath);
 var readerCoeficientes = new TucumanCoeficientesReader(coeficientesFilepath);
 var outputFile = new StreamWriter("Output.txt");
 
-Stopwatch sw = Stopwatch.StartNew();
 
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .Build();
+
+Stopwatch sw = Stopwatch.StartNew();
 Console.CursorVisible = false;
+Console.WriteLine($"Servidor de base de datos: {configuration["Server"]}");
 Console.WriteLine($"Leyendo archivo acreditan: {acreditanFilepath}");
 List<AcreditanRegistry> padron = readerAcreditan.GetRegistries();
 Console.WriteLine($"Leyendo archivo coeficientes: {coeficientesFilepath}");
