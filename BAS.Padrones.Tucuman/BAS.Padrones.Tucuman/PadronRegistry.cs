@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,6 +45,17 @@ namespace BAS.Padrones.Tucuman
             AltaBaja = null;
             Actualizado = false;
             Alicuota = acreditanRegistry.Porcentaje;
+            Grupo = null;
+        }
+
+        public PadronRegistry(CoeficientesRegistry coeficientesRegistry, double aliquotPercentage)
+        {
+            Regimen = Regimen.Percepcion; // FIX
+            FechaPublicacion = coeficientesRegistry.Fecha;
+            Cuit = coeficientesRegistry.Cuit;
+            AltaBaja = null;
+            Actualizado = false;
+            Alicuota = coeficientesRegistry.Porcentaje * aliquotPercentage;
             Grupo = null;
         }
 
@@ -116,7 +128,7 @@ namespace BAS.Padrones.Tucuman
             }
             
             sb.Append(";");
-            sb.Append($"{Alicuota}");
+            sb.Append($"{(Alicuota?? Alicuota!.Value).ToString("N2", CultureInfo.InvariantCulture)}");
             sb.Append(";");
             sb.Append($"{Grupo}");
             sb.Append(";");
