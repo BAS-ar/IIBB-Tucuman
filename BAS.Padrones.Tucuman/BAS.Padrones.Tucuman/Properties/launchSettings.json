@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BAS.Padrones.Tucuman": {
+      "commandName": "Project",
+      "commandLineArgs": "-a \"C:\\Users\\admin\\Documents\\Dev\\IIBB Tucuman\\Padrón Tucuman\\ACREDITAN.txt\" -c \"C:\\Users\\admin\\Documents\\Dev\\IIBB Tucuman\\Padrón Tucuman\\archivocoefrg116.txt\" -o \"Output.txt\" -p 914"
+    }
+  }
+}

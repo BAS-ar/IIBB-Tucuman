@@ -5,18 +5,40 @@
 using BAS.Padrones.Tucuman;
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
+using CommandLine;
 
-var acreditanFilepath = "C:\\Users\\admin\\Documents\\Dev\\IIBB Tucuman\\Padrón Tucuman\\ACREDITAN.txt";
-var coeficientesFilepath = "C:\\Users\\admin\\Documents\\Dev\\IIBB Tucuman\\Padrón Tucuman\\archivocoefrg116.txt";
+string acreditanFilepath = "";
+string coeficientesFilepath = "";
+string outputFilepath = "";
+string provinceCode = "";
+
+Parser.Default.ParseArguments<Options>(args)
+    .WithParsed(o =>
+    {
+        acreditanFilepath = o.AcreditanFilepath ?? "acreditan.txt";
+        coeficientesFilepath = o.CoeficientesFilepath ?? "coeficientes.txt";
+        outputFilepath = o.OutputFilepath ?? "output.txt";
+        provinceCode = o.ProvinceCode ?? "914";
+    });
 
 var readerAcreditan = new TucumanAcreditanReader(acreditanFilepath);
 var readerCoeficientes = new TucumanCoeficientesReader(coeficientesFilepath);
-var outputFile = new StreamWriter("Output.txt");
-
+var outputFile = new StreamWriter(outputFilepath);
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
+
+var connectionString = 
+    $"Data Source={configuration["Server"]};" +
+    $"Initial Catalog={configuration["Database"]};" +
+    $"User Id={configuration["User"]};" +
+    $"Password={configuration["Password"]};" +
+    $"TrustServerCertificate=True";
+
+var clienteRepository = new ClientesRepository(connectionString);
 
 Stopwatch sw = Stopwatch.StartNew();
 Console.CursorVisible = false;
@@ -58,7 +80,8 @@ foreach (var registry in padron)
         if (registry.Convenio == Convenio.Multilateral)
         {
             // Check if client is local
-            bool localClient = random.Next(0, 100) > 50;
+            // bool localClient = random.Next(0, 100) > 50;
+            bool localClient = clienteRepository.EsLocal(registry.Cuit!, provinceCode);
             if (localClient || coeficiente == null)
             {
                 bsasRegistry.Alicuota = bsasRegistry.Alicuota * 0.5;
@@ -94,7 +117,8 @@ foreach (var registry in coeficientesSinPadron)
     PadronRegistry bsasRegistry;
 
     // TODO: Look up database to know if the client is local
-    bool localClient = random.Next(0, 100) > 50;
+    // bool localClient = random.Next(0, 100) > 50;
+    bool localClient = clienteRepository.EsLocal(registry.Cuit!, provinceCode);
     if (localClient)
     {
         bsasRegistry = new PadronRegistry(registry, 0.5);
