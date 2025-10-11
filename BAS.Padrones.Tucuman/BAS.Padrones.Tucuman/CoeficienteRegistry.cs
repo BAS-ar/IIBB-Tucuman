@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BAS.Padrones.Tucuman
 {
-    internal class CoeficientesRegistry
+    internal class CoeficienteRegistry
     {
         public string? Cuit { get; set; }
 

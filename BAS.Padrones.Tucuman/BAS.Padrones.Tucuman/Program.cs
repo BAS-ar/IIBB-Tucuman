@@ -24,7 +24,7 @@ Console.WriteLine($"Servidor de base de datos: {configuration["Server"]}");
 Console.WriteLine($"Leyendo archivo acreditan: {acreditanFilepath}");
 List<AcreditanRegistry> padron = readerAcreditan.GetRegistries();
 Console.WriteLine($"Leyendo archivo coeficientes: {coeficientesFilepath}");
-List<CoeficientesRegistry> coeficientes = readerCoeficientes.GetRegistries();
+List<CoeficienteRegistry> coeficientes = readerCoeficientes.GetRegistries();
 
 Console.WriteLine("Buscando coeficientes sin registros en el padrón...");
 // This uses 30% of the time
@@ -65,6 +65,8 @@ foreach (var registry in padron)
             }
             else
             {
+                bsasRegistry.Regimen = Regimen.Retencion;
+
                 if (coeficiente.Coeficiente > 0)
                 {
                     // RG 116/10: 0.5 * COEFICIENTE * ALICUOTA
@@ -89,28 +91,31 @@ foreach (var registry in coeficientesSinPadron)
     Console.SetCursorPosition(0, Console.CursorTop);
     i++;
 
+    PadronRegistry bsasRegistry;
+
     // TODO: Look up database to know if the client is local
     bool localClient = random.Next(0, 100) > 50;
     if (localClient)
     {
-        var bsasRegistry = new PadronRegistry(registry, 0.5);
-        outputFile.WriteLine(bsasRegistry.ToString());
+        bsasRegistry = new PadronRegistry(registry, 0.5);
     }
     else
     {
         if (registry.Coeficiente > 0)
         {
             // RG 116/10: 0.5 * COEFICIENTE * ALICUOTA
-            var bsasRegistry = new PadronRegistry(coeficientesRegistry: registry, aliquotPercentage: 0.5 * registry.Coeficiente.Value);
-            outputFile.WriteLine(bsasRegistry.ToString());
+            bsasRegistry = new PadronRegistry(coeficienteRegistry: registry, aliquotPercentage: 0.5 * registry.Coeficiente.Value);
         }
         else
         {
             // ALICUOTA * 0.175
-            var bsasRegistry = new PadronRegistry(registry, 0.175);
-            outputFile.WriteLine(bsasRegistry.ToString());
+            bsasRegistry = new PadronRegistry(registry, 0.175);
         }
     }
+
+    // PadronRegistry created with only CoeficienteRegistry are always a Retencion
+    // bsasRegistry.Regimen = Regimen.Retencion;
+    outputFile.WriteLine(bsasRegistry.ToString());
 
     Console.Write($"Se han procesado {i} registros de {coeficientesSinPadron.Count} ({(((double)i / (double)coeficientesSinPadron.Count) * 100).ToString("N0")}%)");
 }

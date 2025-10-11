@@ -18,10 +18,10 @@ namespace BAS.Padrones.Tucuman
             _filePath = filePath;
         }
 
-        public List<CoeficientesRegistry> GetRegistries()
+        public List<CoeficienteRegistry> GetRegistries()
         {
             var coeficientesFileStream = new FileStream(_filePath, FileMode.Open);
-            List<CoeficientesRegistry> padron = new();
+            List<CoeficienteRegistry> padron = new();
 
             using (TextReader reader = new StreamReader(coeficientesFileStream))
             {
@@ -29,7 +29,7 @@ namespace BAS.Padrones.Tucuman
                 reader.ReadLine(); // We skip the column's names
                 while ((line = reader.ReadLine()) != null)
                 {
-                    var registry = new CoeficientesRegistry()
+                    var registry = new CoeficienteRegistry()
                     {
                         Cuit = line.Substring(0, 13).TrimEnd(),
                         Excento = line.Substring(13, 3).TrimEnd() == "E",

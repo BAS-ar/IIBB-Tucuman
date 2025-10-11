@@ -34,10 +34,10 @@ namespace BAS.Padrones.Tucuman
                 
         }
 
-        public PadronRegistry(AcreditanRegistry acreditanRegistry, CoeficientesRegistry? coeficientesRegistry)
+        public PadronRegistry(AcreditanRegistry acreditanRegistry, CoeficienteRegistry? coeficientesRegistry)
         {
-            Regimen = Regimen.Percepcion; // FIX
-            FechaPublicacion = DateTime.Now; // FIX
+            Regimen = Regimen.Percepcion;
+            FechaPublicacion = acreditanRegistry.FechaDesde;
             FechaDesde = acreditanRegistry.FechaDesde;
             FechaHasta = acreditanRegistry.FechaHasta;
             Cuit = acreditanRegistry.Cuit;
@@ -48,14 +48,14 @@ namespace BAS.Padrones.Tucuman
             Grupo = null;
         }
 
-        public PadronRegistry(CoeficientesRegistry coeficientesRegistry, double aliquotPercentage)
+        public PadronRegistry(CoeficienteRegistry coeficienteRegistry, double aliquotPercentage)
         {
-            Regimen = Regimen.Percepcion; // FIX
-            FechaPublicacion = coeficientesRegistry.Fecha;
-            Cuit = coeficientesRegistry.Cuit;
+            Regimen = Regimen.Retencion;
+            FechaPublicacion = coeficienteRegistry.Fecha;
+            Cuit = coeficienteRegistry.Cuit;
             AltaBaja = null;
             Actualizado = false;
-            Alicuota = coeficientesRegistry.Porcentaje * aliquotPercentage;
+            Alicuota = coeficienteRegistry.Porcentaje * aliquotPercentage;
             Grupo = null;
         }
 
