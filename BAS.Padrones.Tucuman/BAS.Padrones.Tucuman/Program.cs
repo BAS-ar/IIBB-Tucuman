@@ -5,9 +5,8 @@
 using BAS.Padrones.Tucuman;
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
-using System.Data.SqlClient;
-using Microsoft.Data.SqlClient;
 using CommandLine;
+using System.Text;
 
 string acreditanFilepath = "";
 string coeficientesFilepath = "";
@@ -25,7 +24,7 @@ Parser.Default.ParseArguments<Options>(args)
 
 var readerAcreditan = new TucumanAcreditanReader(acreditanFilepath);
 var readerCoeficientes = new TucumanCoeficientesReader(coeficientesFilepath);
-var outputFile = new StreamWriter(outputFilepath);
+var outputFile = new StreamWriter(outputFilepath, false, Encoding.UTF8);
 
 var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -38,6 +37,7 @@ var connectionString =
     $"Password={configuration["Password"]};" +
     $"TrustServerCertificate=True";
 
+// Access to the database. This is extremely slow. Like 700% slower.
 var clienteRepository = new ClientesRepository(connectionString);
 
 Stopwatch sw = Stopwatch.StartNew();
@@ -52,9 +52,7 @@ Console.WriteLine("Buscando coeficientes sin registros en el padrón...");
 // This uses 30% of the time
 var coeficientesSinPadron = coeficientes.Where(c => !padron.Any(p => p.Cuit == c.Cuit)).ToList();
 Console.WriteLine($"Se encontraron {coeficientesSinPadron.Count} coeficientes sin registro en el padrón");
-
 Console.WriteLine("Procesando registros de Acreditan...");
-
 
 var random = new Random();
 

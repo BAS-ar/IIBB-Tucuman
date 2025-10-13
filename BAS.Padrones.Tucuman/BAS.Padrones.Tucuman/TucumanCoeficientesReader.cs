@@ -23,7 +23,7 @@ namespace BAS.Padrones.Tucuman
             var coeficientesFileStream = new FileStream(_filePath, FileMode.Open);
             List<CoeficienteRegistry> padron = new();
 
-            using (TextReader reader = new StreamReader(coeficientesFileStream))
+            using (TextReader reader = new StreamReader(coeficientesFileStream, Encoding.UTF8))
             {
                 string? line = "";
                 reader.ReadLine(); // We skip the column's names

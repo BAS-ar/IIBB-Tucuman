@@ -36,7 +36,7 @@ namespace BAS.Padrones.Tucuman
                 connection.Open();
                 command.ExecuteNonQuery();
 
-                if(returnValue != null && (bool)returnValue.Value)
+                if (returnValue != null && (bool)returnValue.Value)
                 {
                     _clientesLocalesCount++;
                 }

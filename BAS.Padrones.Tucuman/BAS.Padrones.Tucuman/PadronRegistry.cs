@@ -90,11 +90,11 @@ namespace BAS.Padrones.Tucuman
             var sb = new StringBuilder();
             sb.Append($"{(Regimen == Regimen.Retencion? "R" : "P")}");
             sb.Append(";");
-            sb.Append($"{FechaPublicacion.ToString("yyyyMMdd")}");
+            sb.Append($"{FechaPublicacion.ToString("ddMMyyyy")}"); // Yes... this format. nc.
             sb.Append(";");
-            sb.Append($"{FechaDesde.ToString("yyyyMMdd")}");
+            sb.Append($"{FechaDesde.ToString("ddMMyyyy")}");
             sb.Append(";");
-            sb.Append($"{FechaHasta.ToString("yyyyMMdd")}");
+            sb.Append($"{FechaHasta.ToString("ddMMyyyy")}");
             sb.Append(";");
             sb.Append($"{Cuit}");
             sb.Append(";");

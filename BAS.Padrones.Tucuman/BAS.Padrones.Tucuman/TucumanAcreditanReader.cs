@@ -30,7 +30,7 @@ namespace BAS.Padrones.Tucuman
             var padronFileStream = new FileStream(_filePath, FileMode.Open);
             List<AcreditanRegistry> padron = new();
 
-            using (TextReader reader = new StreamReader(padronFileStream))
+            using (TextReader reader = new StreamReader(padronFileStream, Encoding.UTF8))
             {
 
                 string? line = "";
