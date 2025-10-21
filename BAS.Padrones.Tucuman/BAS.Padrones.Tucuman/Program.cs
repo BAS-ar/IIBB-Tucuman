@@ -12,6 +12,9 @@ string acreditanFilepath = "";
 string coeficientesFilepath = "";
 string outputFilepath = "";
 string provinceCode = "";
+bool coeficientesParaExistentes = false;
+bool coeficientesParaInexistentes = false;
+bool coeficientePor05 = false;
 
 var parser = new Parser(args);
 var options = parser.GetOptions(); 
@@ -30,11 +33,15 @@ var configuration = new ConfigurationBuilder()
     .Build();
 
 var connectionString =
-    $"Data Source={configuration["Server"]};" +
-    $"Initial Catalog={configuration["Database"]};" +
-    $"User Id={configuration["User"]};" +
-    $"Password={configuration["Password"]};" +
+    $"Data Source={configuration["Database:Server"]};" +
+    $"Initial Catalog={configuration["Database:Database"]};" +
+    $"User Id={configuration["Database:User"]};" +
+    $"Password={configuration["Database:Password"]};" +
     $"TrustServerCertificate=True";
+
+coeficientesParaExistentes = configuration.GetSection("Evaluar coeficientes para existentes en padron").Get<bool>();
+coeficientesParaInexistentes = configuration.GetSection("Evaluar coeficientes para inexistentes en padron").Get<bool>();
+coeficientePor05 = configuration.GetSection("Multiplicar coeficiente por 0.5").Get<bool>();
 
 // Access to the database. This is extremely slow. Like 700% slower.
 var clienteRepository = new ClientesRepository(connectionString);
