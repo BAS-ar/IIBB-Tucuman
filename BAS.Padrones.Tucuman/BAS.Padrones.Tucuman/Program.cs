@@ -5,22 +5,21 @@
 using BAS.Padrones.Tucuman;
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
-using CommandLine;
 using System.Text;
+//using CommandLine; 
 
 string acreditanFilepath = "";
 string coeficientesFilepath = "";
 string outputFilepath = "";
 string provinceCode = "";
 
-Parser.Default.ParseArguments<Options>(args)
-    .WithParsed(o =>
-    {
-        acreditanFilepath = o.AcreditanFilepath ?? "acreditan.txt";
-        coeficientesFilepath = o.CoeficientesFilepath ?? "coeficientes.txt";
-        outputFilepath = o.OutputFilepath ?? "output.txt";
-        provinceCode = o.ProvinceCode ?? "914";
-    });
+var parser = new Parser(args);
+var options = parser.GetOptions(); 
+
+acreditanFilepath = options.AcreditanFilepath ?? "acreditan.txt";
+coeficientesFilepath = options.CoeficientesFilepath ?? "coeficientes.txt";
+outputFilepath = options.OutputFilepath ?? "output.txt";
+provinceCode = options.ProvinceCode ?? "914";
 
 var readerAcreditan = new TucumanAcreditanReader(acreditanFilepath);
 var readerCoeficientes = new TucumanCoeficientesReader(coeficientesFilepath);
@@ -30,7 +29,7 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .Build();
 
-var connectionString = 
+var connectionString =
     $"Data Source={configuration["Server"]};" +
     $"Initial Catalog={configuration["Database"]};" +
     $"User Id={configuration["User"]};" +
