@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BAS.Padrones.Tucuman
 {
-    public class Options
+    public class Parametros
     {
         // [Option('a', "acreditan", Required = true, HelpText = "Ruta al archivo de padrón Acreditan")]
         public string? AcreditanFilepath { get; set; }

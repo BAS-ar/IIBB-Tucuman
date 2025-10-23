@@ -20,4 +20,12 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\admin\Documents\Dev\IIBB Tucuman\IIBB-Tucuman\BAS.Padrones.Tucuman\BAS.Padrones.Tucuman\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\admin\Documents\Dev\IIBB Tucuman\IIBB-Tucuman\BAS.Padrones.Tucuman\BAS.Padrones.Tucuman\.editorconfig" />
+  </ItemGroup>
+
 </Project>

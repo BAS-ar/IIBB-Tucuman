@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace BAS.Padrones.Tucuman
                 
         }
 
-        public PadronRegistry(AcreditanRegistry acreditanRegistry, CoeficienteRegistry? coeficientesRegistry)
+        public PadronRegistry(AcreditanRegistry acreditanRegistry, double alicuota)
         {
             Regimen = Regimen.Percepcion;
             FechaPublicacion = acreditanRegistry.FechaDesde;
@@ -44,18 +45,18 @@ namespace BAS.Padrones.Tucuman
             Convenio = acreditanRegistry.Convenio;
             AltaBaja = null;
             Actualizado = false;
-            Alicuota = acreditanRegistry.Porcentaje;
+            Alicuota = alicuota;
             Grupo = null;
         }
 
-        public PadronRegistry(CoeficienteRegistry coeficienteRegistry, double aliquotPercentage)
+        public PadronRegistry(CoeficienteRegistry coeficienteRegistry, double alicuota)
         {
             Regimen = Regimen.Retencion;
             FechaPublicacion = coeficienteRegistry.Fecha;
             Cuit = coeficienteRegistry.Cuit;
             AltaBaja = null;
             Actualizado = false;
-            Alicuota = coeficienteRegistry.Porcentaje * aliquotPercentage;
+            Alicuota = alicuota;
             Grupo = null;
         }
 

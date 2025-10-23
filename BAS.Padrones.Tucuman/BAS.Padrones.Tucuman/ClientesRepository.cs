@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BAS.Padrones.Tucuman
 {
-    internal class ClientesRepository
+    internal class ClientesRepository : IClientesRepository
     {
         private string _connectionString;
         private int _clientesLocalesCount;

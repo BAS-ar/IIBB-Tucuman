@@ -8,11 +8,11 @@ namespace BAS.Padrones.Tucuman
 {
     internal class Parser
     {
-        private Options _options { get; set; }
+        private Parametros _options { get; set; }
 
         public Parser(string[] args)
         {
-            _options = new Options();
+            _options = new Parametros();
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -38,7 +38,7 @@ namespace BAS.Padrones.Tucuman
             }
         }
 
-        public Options GetOptions()
+        public Parametros GetOptions()
         {
             return _options;
         }

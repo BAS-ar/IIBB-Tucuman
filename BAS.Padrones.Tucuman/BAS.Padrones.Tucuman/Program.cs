@@ -12,9 +12,6 @@ string acreditanFilepath = "";
 string coeficientesFilepath = "";
 string outputFilepath = "";
 string provinceCode = "";
-bool coeficientesParaExistentes = false;
-bool coeficientesParaInexistentes = false;
-bool coeficientePor05 = false;
 
 var parser = new Parser(args);
 var options = parser.GetOptions(); 
@@ -38,10 +35,6 @@ var connectionString =
     $"User Id={configuration["Database:User"]};" +
     $"Password={configuration["Database:Password"]};" +
     $"TrustServerCertificate=True";
-
-coeficientesParaExistentes = configuration.GetSection("Evaluar coeficientes para existentes en padron").Get<bool>();
-coeficientesParaInexistentes = configuration.GetSection("Evaluar coeficientes para inexistentes en padron").Get<bool>();
-coeficientePor05 = configuration.GetSection("Multiplicar coeficiente por 0.5").Get<bool>();
 
 // Access to the database. This is extremely slow. Like 700% slower.
 var clienteRepository = new ClientesRepository(connectionString);
@@ -67,45 +60,16 @@ foreach (var registry in padron)
 {
     Console.SetCursorPosition(0, Console.CursorTop);
     i++;
-    // Slows down a lot when looking for coeficients.
-    // could be optimized filtering registries that has no record in Acreditan
     var coeficiente = coeficientes.SingleOrDefault(c => c.Cuit == registry.Cuit);
+    var config = new Configuracion();
+    config.CargarDesdeFrameworks(configuration);
+    var calculadora = new CalculadoraDeAlicuota(clienteRepository, config, options);
+    calculadora.CargarAcreditanRegistry(registry);
+    calculadora.CargarCoeficientesRegistry(coeficiente);
+    var resultado = calculadora.CalcularAlicuota();
 
-    var bsasRegistry = new PadronRegistry(registry, coeficiente);
-    if (registry.Excento)
-    {
-        // The flow diagram says to do nothing
-        // This is NOT right, i guess. It will be applied default aliquot when not found in Padron afterwards.
-        // So, i will apply aliquot = 0
-        bsasRegistry.Alicuota = 0;
-    }
-    else
-    {
-        if (registry.Convenio == Convenio.Multilateral)
-        {
-            // Check if client is local
-            // bool localClient = random.Next(0, 100) > 50;
-            bool localClient = clienteRepository.EsLocal(registry.Cuit!, provinceCode);
-            if (localClient || coeficiente == null)
-            {
-                bsasRegistry.Alicuota = bsasRegistry.Alicuota * 0.5;
-            }
-            else
-            {
-                bsasRegistry.Regimen = Regimen.Retencion;
+    var bsasRegistry = new PadronRegistry(registry, resultado.Alicuota);
 
-                if (coeficiente.Coeficiente > 0)
-                {
-                    // RG 116/10: 0.5 * COEFICIENTE * ALICUOTA
-                    bsasRegistry.Alicuota = registry.Porcentaje * 0.5 * coeficiente.Coeficiente.Value;
-                }
-                else
-                {
-                    bsasRegistry.Alicuota = registry.Porcentaje * 0.175;
-                }
-            }
-        }
-    }
     outputFile.WriteLine(bsasRegistry.ToString());
     Console.Write($"Se han procesado {i} registros de {padron.Count} ({(((double)i / (double)padron.Count) * 100).ToString("N0")}%)");
 }
@@ -117,32 +81,14 @@ foreach (var registry in coeficientesSinPadron)
 {
     Console.SetCursorPosition(0, Console.CursorTop);
     i++;
+    var config = new Configuracion();
+    config.CargarDesdeFrameworks(configuration);
+    var calculadora = new CalculadoraDeAlicuota(clienteRepository, config, options);
+    calculadora.CargarCoeficientesRegistry(registry);
+    var resultado = calculadora.CalcularAlicuota();
 
-    PadronRegistry bsasRegistry;
+    var bsasRegistry = new PadronRegistry(registry, resultado.Alicuota);
 
-    // TODO: Look up database to know if the client is local
-    // bool localClient = random.Next(0, 100) > 50;
-    bool localClient = clienteRepository.EsLocal(registry.Cuit!, provinceCode);
-    if (localClient)
-    {
-        bsasRegistry = new PadronRegistry(registry, 0.5);
-    }
-    else
-    {
-        if (registry.Coeficiente > 0)
-        {
-            // RG 116/10: 0.5 * COEFICIENTE * ALICUOTA
-            bsasRegistry = new PadronRegistry(coeficienteRegistry: registry, aliquotPercentage: 0.5 * registry.Coeficiente.Value);
-        }
-        else
-        {
-            // ALICUOTA * 0.175
-            bsasRegistry = new PadronRegistry(registry, 0.175);
-        }
-    }
-
-    // PadronRegistry created with only CoeficienteRegistry are always a Retencion
-    // bsasRegistry.Regimen = Regimen.Retencion;
     outputFile.WriteLine(bsasRegistry.ToString());
 
     Console.Write($"Se han procesado {i} registros de {coeficientesSinPadron.Count} ({(((double)i / (double)coeficientesSinPadron.Count) * 100).ToString("N0")}%)");
