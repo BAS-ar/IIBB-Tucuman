@@ -7,8 +7,8 @@ namespace TestProject1
     {
         Configuracion configuracion;
         Parametros options = new Parametros();
-        AcreditanRegistry acreditanRegistry;
-        CoeficienteRegistry coeficienteRegistry;
+        AcreditanRegistry? acreditanRegistry;
+        CoeficienteRegistry? coeficienteRegistry;
         CalculadoraDeAlicuota calculadoraDeAlicuota;
         IClientesRepository clientesRepository;
 
@@ -27,7 +27,7 @@ namespace TestProject1
             acreditanRegistry = new AcreditanRegistry();
             acreditanRegistry.Cuit = "20364986352";
             acreditanRegistry.Excento = false;
-            acreditanRegistry.Porcentaje = 3.33;
+            acreditanRegistry.Porcentaje = 3.5;
             acreditanRegistry.Convenio = Convenio.Local;
             acreditanRegistry.Denominacion = "izzitech s.a.";
             acreditanRegistry.FechaDesde = new DateTime(2025, 10, 01);
@@ -68,92 +68,222 @@ namespace TestProject1
         [Test]
         public void ExistentesFalseInexistentesFalseLocalAlicuotaCompleta()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = false;
+            configuracion.CoeficientesParaInexistentes = false;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5));
         }
 
         [Test]
         public void ExistentesFalseInexistentesFalseMultilateralAlicuotaPor05()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = false;
+            configuracion.CoeficientesParaInexistentes = false;
+
+            acreditanRegistry.Cuit = "2033344455"; // Cuit no local
+            acreditanRegistry.Convenio = Convenio.Multilateral;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5 * 0.5));
         }
 
 
         [Test]
         public void ExistentesTrueInexistentesFalseLocalAlicuotaCompleta()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = true;
+            configuracion.CoeficientesParaInexistentes = false;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5));
         }
 
         [Test]
         public void ExistentesTrueInexistentesFalseMultilateralSedeTucumanAlicuotaPor05()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = true;
+            configuracion.CoeficientesParaInexistentes = false;
+
+            acreditanRegistry.Convenio = Convenio.Multilateral;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5 * 0.5));
         }
 
         [Test]
         public void ExistentesTrueInexistentesFalseMultilateralSinSedeConvenioIgualACeroAlicuotaEspecial()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = true;
+            configuracion.CoeficientesParaInexistentes = false;
+            configuracion.AlicuotaEspecial = 1.75;
+
+            acreditanRegistry.Cuit = "2033344455"; // Cuit no local
+            acreditanRegistry.Convenio = Convenio.Multilateral;
+            coeficienteRegistry.Coeficiente = 0;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(1.75));
         }
 
         [Test]
         public void ExistentesTrueInexistentesFalseMultilateralSinSedeConvenioMayorACeroAlicuotaCoeficientePorParametrizacion()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = true;
+            configuracion.CoeficientesParaInexistentes = false;
+
+            acreditanRegistry.Cuit = "2033344455"; // Cuit no local
+            acreditanRegistry.Convenio = Convenio.Multilateral;
+            coeficienteRegistry.Coeficiente = 0.75;
+            coeficienteRegistry.Porcentaje = 3.5;
+            configuracion.RazonCoeficiente = 0.7;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5 * 0.75 * 0.7));
         }
 
         [Test]
         public void ExistentesFalseInexistentesTrueLocalAlicuotaCompleta()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = false;
+            configuracion.CoeficientesParaInexistentes = true;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5));
         }
 
         [Test]
         public void ExistentesFalseInexistentesTrueNoEsLocalAlicuotaPor05()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = false;
+            configuracion.CoeficientesParaInexistentes = true;
+
+            acreditanRegistry.Cuit = "2033344455"; // Cuit no local
+            acreditanRegistry.Convenio = Convenio.Multilateral;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5 * 0.5));
         }
 
         [Test]
         public void ExistentesFalseInexistentesTrueEnCoeficientesMayorACeroAlicuotaCoeficientePorParametrizacion()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = false;
+            configuracion.CoeficientesParaInexistentes = true;
+
+            acreditanRegistry.Cuit = "2033344455"; // Cuit no local
+            acreditanRegistry.Convenio = Convenio.Multilateral;
+            coeficienteRegistry.Coeficiente = 0.75;
+            coeficienteRegistry.Porcentaje = 3.5;
+            configuracion.RazonCoeficiente = 0.7;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5 * 0.75 * 0.7));
         }
 
         [Test]
         public void ExistentesFalseInexistentesTrueEnCoeficientesIgualACeroAlicuotaEspecial()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = false;
+            configuracion.CoeficientesParaInexistentes = true;
+            configuracion.AlicuotaEspecial = 1.75;
+
+            acreditanRegistry.Cuit = "2033344455"; // Cuit no local
+            acreditanRegistry.Convenio = Convenio.Multilateral;
+            coeficienteRegistry.Coeficiente = 0;
+            coeficienteRegistry.Porcentaje = 3.5;
+            configuracion.RazonCoeficiente = 0.7;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(1.75));
         }
 
         [Test]
         public void ExistentesTrueInexistentesTrueLocalAlicuotaCompleta()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = true;
+            configuracion.CoeficientesParaInexistentes = true;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5));
         }
 
         [Test]
         public void ExistentesTrueInexistentesTrueNoEsLocalSedeTucumanAlicuotaPor05()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = true;
+            configuracion.CoeficientesParaInexistentes = true;
+
+            acreditanRegistry.Convenio = Convenio.Multilateral;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5 * 0.5));
         }
 
         [Test]
         public void ExistentesTrueInexistentesTrueNoEsLocalSinSedeTucumanNoEstaEnCoeficientes()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = true;
+            configuracion.CoeficientesParaInexistentes = true;
+            configuracion.AlicuotaEspecial = 1.75;
+
+            acreditanRegistry.Cuit = "2033344455"; // Cuit no local
+            acreditanRegistry.Convenio = Convenio.Multilateral;
+            coeficienteRegistry = null;
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5 * 0.5));
         }
 
         [Test]
         public void ExistentesTrueInexistentesTrueEnCoeficientesIgualACeroAlicuotaEspecial()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = true;
+            configuracion.CoeficientesParaInexistentes = true;
+
+            configuracion.AlicuotaEspecial = 1.75;
+            coeficienteRegistry.Coeficiente = 0;
+            coeficienteRegistry.Porcentaje = 3.5;
+            configuracion.RazonCoeficiente = 0.7;
+
+            acreditanRegistry = null;
+            coeficienteRegistry.Cuit = "2033344455"; // Cuit no local
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(1.75));
         }
 
         [Test]
         public void ExistentesTrueInexistentesTrueEnCoeficientesMayorACeroAlicuotaCoeficientePorParametrizacion()
         {
-            Assert.Fail();
+            configuracion.CoeficientesParaExistentes = true;
+            configuracion.CoeficientesParaInexistentes = true;
+
+            configuracion.AlicuotaEspecial = 1.75;
+            coeficienteRegistry.Coeficiente = 0.77;
+            coeficienteRegistry.Porcentaje = 3.5;
+            configuracion.RazonCoeficiente = 0.7;
+
+            acreditanRegistry = null;
+            coeficienteRegistry.Cuit = "2033344455"; // Cuit no local
+
+            calculadoraDeAlicuota.CargarAcreditanRegistry(acreditanRegistry);
+            var result = calculadoraDeAlicuota.CalcularAlicuota();
+            Assert.That(result.Alicuota, Is.EqualTo(3.5 * 0.7));
         }
     }
 }
