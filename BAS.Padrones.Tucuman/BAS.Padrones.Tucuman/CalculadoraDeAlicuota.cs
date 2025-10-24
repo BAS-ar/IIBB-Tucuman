@@ -2,7 +2,9 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -40,42 +42,56 @@ namespace BAS.Padrones.Tucuman
         public RetornoCalculadora CalcularAlicuota()
         {
             var retorno = new RetornoCalculadora();
-            retorno.Regimen = Regimen.Percepcion;
 
-            if (_acreditanRegistry is not null)
+            if (_acreditanRegistry is null)
             {
-                if (_acreditanRegistry!.Excento)
+                retorno.Regimen = Regimen.Retencion;
+                retorno.Alicuota = SoloEnCoeficientes().Alicuota;
+                return retorno;
+            }
+
+            if (_acreditanRegistry!.Excento)
+            {
+                retorno.Regimen = Regimen.Percepcion;
+                retorno.Alicuota = 0;
+                return retorno;
+            }
+
+            if (_acreditanRegistry.Convenio == Convenio.Local)
+            {
+                retorno.Regimen = Regimen.Percepcion;
+                retorno.Alicuota = _acreditanRegistry.Porcentaje!.Value;
+                return retorno;
+            }
+
+            if (_acreditanRegistry.Convenio == Convenio.Multilateral)
+            {
+                if (!_coeficientesParaExistentes)
                 {
-                    retorno.Alicuota = 0;
+                    retorno.Regimen = Regimen.Retencion;
+                    retorno.Alicuota = _acreditanRegistry.Porcentaje!.Value * 0.5;
                     return retorno;
                 }
 
-                if (_acreditanRegistry.Convenio == Convenio.Multilateral)
+                bool localClient = _clientesRepository.EsLocal(_acreditanRegistry.Cuit!, _options.ProvinceCode!);
+                if (localClient || _coeficienteRegistry == null)
                 {
-                    bool localClient = _clientesRepository.EsLocal(_acreditanRegistry.Cuit!, _options.ProvinceCode!);
-                    if (localClient || _coeficienteRegistry == null)
-                    {
-                        retorno.Alicuota = _acreditanRegistry.Porcentaje!.Value * _razonCoeficiente;
-                    }
-                    else
-                    {
-                        retorno.Regimen = Regimen.Retencion;
-
-                        if (_coeficienteRegistry.Coeficiente > 0)
-                        {
-                            retorno.Alicuota = _acreditanRegistry.Porcentaje!.Value * 0.5 * _coeficienteRegistry.Coeficiente.Value;
-                        }
-                        else
-                        {
-                            retorno.Alicuota = _acreditanRegistry.Porcentaje!.Value * 0.175;
-                        }
-                    }
-
+                    retorno.Regimen = Regimen.Retencion;
+                    retorno.Alicuota = _acreditanRegistry.Porcentaje!.Value * 0.5;
+                    return retorno;
                 }
-            }
-            else
-            {
-                retorno.Alicuota = SoloEnCoeficientes().Alicuota;
+
+                if (_coeficienteRegistry.Coeficiente > 0)
+                {
+                    retorno.Regimen = Regimen.Retencion;
+                    retorno.Alicuota = _coeficienteRegistry.Porcentaje!.Value * _razonCoeficiente;
+                    return retorno;
+                }
+
+                retorno.Regimen = Regimen.Retencion;
+                retorno.Alicuota = _alicuotaEspecial;
+                return retorno;
+
             }
             return retorno;
         }
@@ -83,7 +99,7 @@ namespace BAS.Padrones.Tucuman
         private RetornoCalculadora SoloEnCoeficientes()
         {
             var retorno = new RetornoCalculadora();
-            
+
             if (_coeficienteRegistry!.Coeficiente == 0)
             {
                 retorno.Alicuota = _alicuotaEspecial;
